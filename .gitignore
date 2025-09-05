@@ -1,0 +1,8 @@
+.nextflow
+.nextflow
+.nextflow/*
+*.nextflow/*
+# env & local configs
+.env
+.env.*
+!.env.example
