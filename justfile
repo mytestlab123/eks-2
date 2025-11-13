@@ -51,9 +51,24 @@ eks_config:
     scripts/eks_cluster.sh config
 
 eks_create:
-    scripts/eks_cluster.sh create
+    eksctl create cluster -f eksctl-mongo-lab.yaml
 
 eks_delete:
+    eksctl delete cluster -f eksctl-mongo-lab.yaml --wait
+
+eks_status:
+    eksctl get cluster --name mongo-eks-lab --region ap-southeast-1
+
+eks_nodes:
+    eksctl get nodegroup --cluster mongo-eks-lab --region ap-southeast-1
+
+eks_kubeconfig:
+    aws eks update-kubeconfig --name mongo-eks-lab --region ap-southeast-1
+
+eks_old_create:
+    scripts/eks_cluster.sh create
+
+eks_old_delete:
     scripts/eks_cluster.sh delete
 
 eks_bastion_create:

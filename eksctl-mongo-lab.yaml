@@ -1,0 +1,62 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: mongo-eks-lab
+  region: ap-southeast-1
+  version: "1.33"
+  tags:
+    Project: mongo-eks-lab
+    Environment: dev
+    ManagedBy: eksctl
+    VPC: stata-vpc
+
+vpc:
+  id: vpc-035eb12babd9ca798
+  subnets:
+    public:
+      ap-southeast-1a:
+        id: subnet-0b46281c758264ee6
+      ap-southeast-1b:
+        id: subnet-0d13ba2dcbb0f6d46
+  manageSharedNodeSecurityGroupRules: true
+
+# Public API access enabled (stata-vpc has no VPC endpoints)
+# privateCluster:
+#   enabled: true
+#   skipEndpointCreation: true
+
+iam:
+  withOIDC: true
+
+managedNodeGroups:
+  - name: spot-nodes
+    instanceTypes: ["t3.small"]
+    spot: true
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 2
+    volumeSize: 20
+    volumeType: gp3
+    labels:
+      role: worker
+      workload: mongodb
+    tags:
+      Project: mongo-eks-lab
+      NodeGroup: spot-nodes
+    iam:
+      withAddonPolicies:
+        ebs: true
+        cloudWatch: true
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+    wellKnownPolicies:
+      ebsCSIController: true

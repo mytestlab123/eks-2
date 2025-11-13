@@ -16,7 +16,8 @@ case "$ACTION" in
         --tag-specifications 'ResourceType=security-group,Tags=[{Key=Project,Value=mongo-eks-lab}]' --query GroupId --output text)
       aws ec2 authorize-security-group-ingress --group-id "$SG_ID" --protocol tcp --port 443 --cidr "$VPC_CIDR"
     fi
-    SUBNETS=( ${SUBNET_B:-} )
+    # Use AZ 1a and 1c (where nodes will run)
+    SUBNETS=( ${SUBNET_A:-subnet-0791f110f66224a90} ${SUBNET_C:-subnet-0bdb0912b1c5850a7} )
     for svc in ssm ssmmessages ec2messages ecr.api ecr.dkr ec2 eks logs sts; do
       exists=$(aws ec2 describe-vpc-endpoints --filters Name=vpc-id,Values=$VPC_ID Name=service-name,Values=com.amazonaws.${AWS_REGION}.${svc} \
         --query 'length(VpcEndpoints[])' --output text)

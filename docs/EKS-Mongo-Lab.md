@@ -3,11 +3,17 @@
 ## Inputs (from Amit)
 - Env: single DEV
 - Region: `ap-southeast-1`
-- VPC: `vpc-06814ea8b57b55627` (private)
+- VPC: `vpc-035eb12babd9ca798` (stata-vpc) - default for labs
 - Cluster: private-only API endpoint + SSM bastion
 - Nodes: 2x Spot (t3.small)
 - Backup: S3 OK
 - Tooling: prefer `eksctl` + `kubectl` + `just` (no Terraform)
+
+## VPC Policy
+- **Default:** Use `stata-vpc` (vpc-035eb12babd9ca798) for all labs
+- **Restricted:** TRUST VPC (vpc-06814ea8b57b55627) requires explicit approval
+  - Private subnets only, limited IPs
+  - See `docs/VPC-POLICY.md` for details
 
 ## Current AWS Context (checked)
 - Using `AWS_PROFILE=dev`.
@@ -18,6 +24,91 @@
   - `subnet-0bdb0912b1c5850a7` (ap-southeast-1c)
 - NAT Gateway: not present in this VPC.
 - Route tables for these subnets have no `0.0.0.0/0` egress; a Gateway Endpoint route exists (likely S3).
+
+2025‑11‑13 — S3 Backup Testing SUCCESS ✅
+- **S3 Bucket:** mongo-eks-lab-backup-273828039634
+- **IAM Role:** mongo-eks-lab-backup-role (IRSA)
+- **Backup Method:** Kubernetes Job with mongodump
+- **Backup Size:** 886 bytes (compressed)
+- **Databases Backed Up:** ekslab, testdb
+- **Backup Duration:** 54 seconds
+- **Restore Test:** ✅ Successfully restored 4 documents with indexes
+- **Restore Duration:** 52 seconds
+
+**Files:**
+- Backup manifest: `/tmp/mongodb-backup-simple.yaml`
+- Restore manifest: `/tmp/mongodb-restore-job.yaml`
+- Documentation: `docs/MONGODB-BACKUP.md`
+
+2025‑11‑13 — MongoDB Deployment SUCCESS ✅
+- **Operator:** MongoDB Community Operator v0.9.0+
+- **MongoDB Version:** 7.0.12
+- **Deployment:** 1-member ReplicaSet (mongodb-lab)
+- **Storage:** 5Gi data volume + 2Gi logs volume (EBS gp2)
+- **Pod Status:** 2/2 containers ready (mongod + mongodb-agent)
+- **Phase:** Running
+
+**RBAC Fix Required:**
+- ServiceAccount `mongodb-database` needs permissions: secrets, configmaps, pods (get/list/watch/patch)
+- Created Role and RoleBinding to grant required permissions
+
+**User Configuration:**
+- Admin user (from operator): Limited roles (clusterAdmin, userAdminAnyDatabase)
+- Created `labuser`: Full read/write access (readWriteAnyDatabase, dbAdminAnyDatabase)
+- Password: LabPass123! (for lab only)
+
+**Tested Operations:**
+- ✅ Insert documents
+- ✅ Query with filters
+- ✅ Update documents
+- ✅ Aggregation pipelines
+- ✅ Index creation
+- ✅ Database statistics
+
+**Connection String:**
+```
+mongodb://labuser:LabPass123!@mongodb-lab-0.mongodb-lab-svc.default.svc.cluster.local:27017/?authSource=admin
+```
+
+2025‑11‑13 — Cluster Testing ✅
+- **Pods:** Deployed 2× nginx pods, both running on separate nodes
+- **Networking:** Pod-to-pod communication works, Service DNS resolution works
+- **LoadBalancer:** AWS ELB provisioned successfully
+- **Storage:** EBS CSI driver works, PVC bound and writable
+- **Result:** All core functionality verified, ready for MongoDB deployment
+
+2025‑11‑13 — Cluster Creation SUCCESS ✅
+- **VPC:** stata-vpc (vpc-035eb12babd9ca798)
+- **Version:** EKS 1.33 (latest)
+- **Subnets:** Public subnets (1a, 1b) with auto-assign public IP enabled
+- **Nodes:** 2× t3.small Spot instances (Ready)
+- **API:** Public endpoint (publicAccess=true, privateAccess=false)
+- **Addons:** vpc-cni, coredns, kube-proxy, ebs-csi-driver, metrics-server
+- **Time:** 15 minutes total
+- **Key Fix:** Used public subnets instead of private (no NAT/VPC endpoints needed)
+
+2025‑11‑12 — Cluster Creation Attempt #1 (FAILED)
+- **VPC:** stata-vpc (vpc-035eb12babd9ca798)
+- **Version:** EKS 1.33 (latest)
+- **Issue:** Configured `privateCluster: enabled` but stata-vpc has no VPC endpoints
+- **Result:** Nodes failed to join - "NodeCreationFailure: Instances failed to join the kubernetes cluster"
+- **Root cause:** Private subnets with no NAT + private API = nodes can't reach EKS/ECR/EC2 APIs
+- **Fix:** Removed `privateCluster: enabled` to allow public API access (nodes in private subnets can reach public endpoints via NAT/IGW)
+- **Lesson:** Private EKS clusters require either VPC endpoints OR NAT Gateway for node communication
+
+2025‑11‑12 — VPC Policy Update
+- **Changed VPC:** Now using `stata-vpc` (vpc-035eb12babd9ca798) as default for labs
+- Previous TRUST VPC (vpc-06814ea8b57b55627) is private-only with limited IPs
+- Policy: Always use stata-vpc unless explicit approval given for TRUST VPC
+- stata-vpc has public + private subnets with 4000+ available IPs per subnet
+- Updated: `eksctl-mongo-lab.yaml`, `scripts/mongo-eks.env`, created `docs/VPC-POLICY.md`
+
+2025‑11‑12 — VPC Endpoints Created
+- Created Interface Endpoints in AZ 1a and 1c for: `ecr.api`, `ecr.dkr`, `ec2`, `eks`, `logs`, `sts`.
+- All endpoints in "pending" state (will become "available" in ~5 minutes).
+- Security group `vpce-mongo-eks-sg` allows HTTPS (443) from VPC CIDR.
+- SSM endpoints (ssm, ssmmessages, ec2messages) already existed and are available.
+- Ready to proceed with cluster creation once endpoints are "available".
 
 2025‑09‑05 — Session Outcome
 - Control plane created: `mongo-eks-lab` ACTIVE, v1.29 (private endpoint only).
