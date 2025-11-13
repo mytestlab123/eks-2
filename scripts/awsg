@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PROD_ACCOUNT=${PROD_ACCOUNT:-021577063369}
+acct=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || echo unknown)
+if [[ "$acct" == "$PROD_ACCOUNT" ]]; then
+  echo "🛑💀 PROD account ($acct) — confirmation required"
+  echo "Command: aws $*"
+  read -r -p "Proceed? [y/N] " ans
+  [[ "$ans" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
+elif [[ "$acct" == "unknown" ]]; then
+  echo "⚠️  Unknown AWS identity — proceed with caution"
+  echo "Command: aws $*"
+  read -r -p "Proceed? [y/N] " ans
+  [[ "$ans" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
+fi
+exec aws "$@"
+
