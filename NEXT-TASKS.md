@@ -1,106 +1,101 @@
-# Next Session: Production Deployment in "prod" Profile
+# Next Session: Private-Only EKS Cluster Testing in "dev" Profile
 
 ## Objective
-Deploy private-only EKS cluster to production AWS profile with production-ready features.
+Deploy and test private-only EKS cluster in "dev" AWS profile with a new non-internet VPC to validate the architecture before production deployment.
 
 ## Prerequisites
 - ECR repositories with MongoDB images (already exists)
-- Access to "prod" AWS profile
-- VPC peering or bastion setup for cluster access
+- Access to "dev" AWS profile
+- VPC peering from Cloud9 (stata-vpc) for cluster access
 
 ## Tasks
 
-### 1. Production VPC Setup
-- **CIDR**: 10.3.0.0/16 (production range)
-- **Subnets**: Private only across 3 AZs (ap-southeast-1a/b/c)
+### 1. Development VPC Setup
+- **CIDR**: 10.3.0.0/16 (new VPC, separate from previous 10.2.0.0/16)
+- **Subnets**: Private only across 2 AZs (ap-southeast-1a/b)
 - **VPC Endpoints**: S3, ECR, EKS, EC2, STS, CloudWatch, SSM
 - **No NAT Gateway**: Zero internet access
+- **VPC Peering**: Connect to stata-vpc (10.0.0.0/16) for management
 
 ### 2. EKS Cluster Configuration
-- **Name**: `prod-mongodb-cluster`
+- **Name**: `dev-private-test-cluster`
 - **Version**: 1.33
-- **Nodes**: 3× t3.medium (production sizing)
+- **Nodes**: 2× t3.small (dev sizing)
 - **API Endpoint**: Private only
-- **Logging**: All control plane logs enabled
-- **Encryption**: Secrets encryption with KMS
+- **Logging**: Control plane logs enabled
+- **Profile**: dev (not prod)
 
-### 3. MongoDB Production Setup
-- **Topology**: 3-member ReplicaSet (high availability)
-- **Storage**: 20Gi data + 5Gi logs per member (gp3)
-- **Backup**: Automated S3 backups every 6 hours
-- **Monitoring**: CloudWatch dashboards + alarms
+### 3. MongoDB Development Setup
+- **Topology**: 1-member ReplicaSet (dev/test)
+- **Storage**: 5Gi data + 2Gi logs (gp2)
+- **Images**: From ECR (already mirrored)
+- **Testing**: Connection, backup, restore
 
-### 4. Security Hardening
-- **Network Policies**: Restrict pod-to-pod communication
-- **Pod Security Standards**: Enforce restricted policy
-- **Secrets Management**: AWS Secrets Manager integration
-- **IRSA**: Fine-grained IAM roles for pods
-- **Audit Logging**: CloudWatch Logs Insights queries
+### 4. Testing & Validation
+- **Network Isolation**: Verify no internet access
+- **VPC Peering**: Test kubectl access from Cloud9
+- **MongoDB**: Deploy and test operator
+- **Backup**: Test S3 backup functionality
+- **Performance**: Basic load testing
 
-### 5. Operational Features
-- **HPA**: Horizontal Pod Autoscaler for workloads
-- **Cluster Autoscaler**: Node scaling based on demand
-- **Metrics Server**: Resource metrics collection
-- **Prometheus/Grafana**: Optional monitoring stack
-
+### 5. Documentation
+- **Setup Guide**: Document deployment steps
+- **Test Results**: Record validation outcomes
+- **Lessons Learned**: Note any issues or improvements
+- **Production Readiness**: Checklist for prod deployment
 ## Files to Create
 
 ### Configuration Files
-- `prod-cluster.yaml` - eksctl config for production
-- `mongodb-prod.yaml` - 3-member ReplicaSet with production settings
-- `backup-cronjob.yaml` - Automated backup schedule
-- `network-policies.yaml` - Pod network restrictions
-- `monitoring-dashboard.json` - CloudWatch dashboard
+- `dev-private-test-cluster.yaml` - eksctl config for dev testing
+- `mongodb-dev-test.yaml` - 1-member ReplicaSet for testing
+- `test-validation.sh` - Automated validation script
 
 ### Scripts
-- `deploy-prod-complete.sh` - Full production deployment
-- `backup-mongodb.sh` - Manual backup script
-- `restore-mongodb.sh` - Restore from backup
-- `cleanup-prod.sh` - Production cleanup (with safeguards)
+- `deploy-dev-test.sh` - Full dev cluster deployment
+- `test-network-isolation.sh` - Verify no internet access
+- `test-mongodb.sh` - MongoDB functionality tests
+- `cleanup-dev-test.sh` - Dev cluster cleanup
 
 ### Documentation
-- `PRODUCTION-SETUP.md` - Complete production guide
-- `BACKUP-RESTORE.md` - Backup and restore procedures
-- `MONITORING.md` - Monitoring and alerting guide
-- `RUNBOOK.md` - Operational runbook
+- `DEV-TEST-RESULTS.md` - Test results and validation
+- `PRODUCTION-READINESS.md` - Checklist for prod deployment
 
 ## Success Criteria
 
-- [ ] Cluster deployed in prod profile
-- [ ] 3-node MongoDB ReplicaSet running
-- [ ] Automated backups working
-- [ ] CloudWatch dashboards showing metrics
-- [ ] Alarms configured and tested
-- [ ] Network policies enforced
-- [ ] Secrets encrypted with KMS
-- [ ] Documentation complete
-- [ ] Runbook validated
+- [ ] Cluster deployed in dev profile (not prod)
+- [ ] New VPC (10.3.0.0/16) with no internet access
+- [ ] VPC peering working from Cloud9
+- [ ] MongoDB operator deployed with ECR images
+- [ ] 1-member MongoDB running successfully
+- [ ] Network isolation verified (no internet)
+- [ ] Backup to S3 tested
+- [ ] All tests documented
+- [ ] Production readiness checklist complete
 
 ## Estimated Time
-- Setup: 30-40 minutes
-- Testing: 20-30 minutes
-- Documentation: 30 minutes
-- **Total**: ~2 hours
+- Setup: 20-30 minutes
+- Testing: 30-40 minutes
+- Documentation: 20 minutes
+- **Total**: ~1.5 hours
 
 ## Cost Estimate (Monthly)
 
 | Resource | Quantity | Unit Cost | Total |
 |----------|----------|-----------|-------|
 | EKS Control Plane | 1 | $73 | $73 |
-| t3.medium nodes | 3 | $30 | $90 |
-| EBS gp3 (75GB) | 1 | $6 | $6 |
+| t3.small nodes | 2 | $15 | $30 |
+| EBS gp2 (14GB) | 1 | $1.12 | $1.12 |
 | VPC Endpoints | 7 | $7.30 | $51 |
-| CloudWatch Logs | ~5GB | $2.50 | $2.50 |
-| S3 Backups | ~10GB | $0.23 | $0.23 |
-| **Total** | | | **~$223/month** |
+| CloudWatch Logs | ~2GB | $1 | $1 |
+| **Total** | | | **~$156/month** |
 
 ## References
-- [PRIVATE-EKS-SETUP.md](PRIVATE-EKS-SETUP.md) - Base private cluster setup
-- [AWS EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
-- [MongoDB Production Notes](https://docs.mongodb.com/kubernetes-operator/stable/tutorial/plan-k8s-operator-architecture/)
+- [PRIVATE-EKS-SETUP.md](PRIVATE-EKS-SETUP.md) - Previous private cluster setup
+- [DOCS.md](DOCS.md) - Architecture and patterns
 
 ## Notes
+- This is a TEST deployment in dev profile
 - Use existing ECR images (no need to re-mirror)
-- Consider multi-region backup replication
-- Test disaster recovery procedures
-- Document RTO/RPO requirements
+- Focus on validation and testing
+- Document everything for production deployment
+- After successful testing, plan production deployment in prod profile
