@@ -2,6 +2,17 @@
 
 > For AWS Q CLI and automated deployments
 
+## Current Status
+
+**Active Deployment:** EKS cluster in stata-vpc (public subnets)  
+**Next Task:** Multi-VPC setup - See `NEXT-TASK.md` for details
+
+** rule: **
+- Ask me if you are deleting anything.
+- Never never delete anything which you have not created. Ask for approval and confirm it two time.
+
+---
+
 ## Quick Commands
 
 ### Deploy Everything

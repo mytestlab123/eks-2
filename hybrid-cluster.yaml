@@ -1,0 +1,54 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: dev-hybrid-cluster
+  region: ap-southeast-1
+  version: "1.33"
+
+vpc:
+  cidr: 10.1.0.0/16
+  nat:
+    gateway: Single
+  clusterEndpoints:
+    privateAccess: true
+    publicAccess: true
+
+availabilityZones:
+  - ap-southeast-1a
+  - ap-southeast-1b
+
+managedNodeGroups:
+  - name: hybrid-nodes
+    instanceType: t3.small
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 3
+    privateNetworking: true
+    spot: true
+    iam:
+      withAddonPolicies:
+        ebs: true
+        efs: true
+        cloudWatch: true
+    labels:
+      role: worker
+      environment: dev
+    tags:
+      Environment: dev
+      Type: hybrid
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+    wellKnownPolicies:
+      ebsCSIController: true
+
+iam:
+  withOIDC: true

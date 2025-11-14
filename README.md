@@ -2,7 +2,40 @@
 
 Production-ready EKS cluster with MongoDB Community Operator and S3 backup solution.
 
+## 📌 Current Status
+
+**Active:** EKS cluster in stata-vpc with MongoDB 7.0.12  
+**Next Task:** Multi-VPC setup (hybrid + private-only) - See `NEXT-TASK.md`
+
+---
+
 ## Quick Start
+
+### Private-Only EKS Cluster (Production-Ready)
+
+**One-command deployment**:
+```bash
+./deploy-private-complete.sh
+```
+
+**Features**:
+- Private API endpoint only
+- No internet access (NAT Gateway disabled)
+- VPC endpoints for AWS services
+- Images mirrored to ECR
+- Accessed via VPC peering from Cloud9
+
+**Time**: ~25 minutes | **Cost**: ~$52/month
+
+See [PRIVATE-EKS-SETUP.md](PRIVATE-EKS-SETUP.md) for details.
+
+### Cleanup
+
+```bash
+./cleanup-private.sh
+```
+
+## Architecture Comparison
 
 ### Deploy (30 minutes)
 ```bash
