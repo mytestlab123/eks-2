@@ -1,0 +1,55 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: dev-private-cluster
+  region: ap-southeast-1
+  version: "1.33"
+
+vpc:
+  cidr: 10.2.0.0/16
+  nat:
+    gateway: Disable
+
+privateCluster:
+  enabled: true
+  skipEndpointCreation: false
+
+availabilityZones:
+  - ap-southeast-1a
+  - ap-southeast-1b
+
+managedNodeGroups:
+  - name: private-nodes
+    instanceType: t3.small
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 3
+    privateNetworking: true
+    spot: true
+    iam:
+      withAddonPolicies:
+        ebs: true
+        efs: true
+        cloudWatch: true
+    labels:
+      role: worker
+      environment: dev
+    tags:
+      Environment: dev
+      Type: private-only
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: coredns
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest
+    wellKnownPolicies:
+      ebsCSIController: true
+
+iam:
+  withOIDC: true
