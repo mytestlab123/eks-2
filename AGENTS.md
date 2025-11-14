@@ -449,3 +449,21 @@ aws ecr get-login-password --region ap-southeast-1
 - ✅ Use MCP tools instead of direct CLI
 - ✅ Check command success before proceeding
 - ❌ Never hardcode credentials
+
+---
+
+## Session Start Checklist
+
+**ALWAYS do this at the start of each session**:
+
+1. ✅ Read this file (AGENTS.md) for context and instructions
+2. ✅ Check [TASKS.md](TASKS.md) for current and next tasks
+3. ✅ Review task details in linked files (e.g., NEXT-SESSION.md)
+4. ✅ Ask user for approval before creating new branch
+5. ✅ Verify AWS credentials and region (ap-southeast-1)
+
+**Task Workflow**:
+- Current task status → Check TASKS.md
+- Next task details → Follow link in TASKS.md
+- Create branch → Only after user approval
+- Branch naming → `feat/<task-name>`
