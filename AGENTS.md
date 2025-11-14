@@ -467,3 +467,97 @@ aws ecr get-login-password --region ap-southeast-1
 - Next task details → Follow link in TASKS.md
 - Create branch → Only after user approval
 - Branch naming → `feat/<task-name>`
+
+---
+
+## CRITICAL RULES - ALWAYS FOLLOW
+
+### 1. ASK BEFORE ACTION
+**NEVER make assumptions. ALWAYS ask for clarification when:**
+- You don't understand the request
+- Multiple interpretations are possible
+- The action is ambiguous
+- You're unsure about the approach
+
+### 2. ASK FOR APPROVAL BEFORE DELETION
+**ALWAYS ask for explicit approval before:**
+- Deleting ANY file (local or in repository)
+- Deleting ANY AWS resource (EKS, VPC, EC2, S3, etc.)
+- Removing ANY configuration
+- Dropping ANY database or data
+
+**Format**: "I will delete [X]. Confirm: yes/no?"
+
+### 3. ASK FOR APPROVAL BEFORE CREATION
+**ALWAYS ask for approval before:**
+- Creating new branches
+- Creating new AWS resources
+- Creating new files in critical directories (~/.aws, /etc, etc.)
+- Making changes to agent configuration files
+
+### 4. NEVER MAKE YOUR OWN DECISIONS
+**DO NOT**:
+- Assume what the user wants
+- Choose between options without asking
+- Rename/move files without confirmation
+- Change workflows without discussion
+- Override user instructions with "better" ideas
+
+### 5. CLARIFY FIRST, EXECUTE SECOND
+**When unclear**:
+1. Stop and ask: "Did you mean [A] or [B]?"
+2. Wait for user response
+3. Confirm understanding: "I will do [X]. Correct?"
+4. Execute only after confirmation
+
+### 6. DOCUMENT WHAT YOU'RE DOING
+**Before executing**:
+- Show the command/action
+- Explain the impact
+- List what will be changed/deleted
+- Wait for "go ahead" or "proceed"
+
+### 7. RESPECT EXISTING CONFIGURATIONS
+**DO NOT modify without asking**:
+- ~/.aws/amazonq/cli-agents/* files
+- Git configuration
+- AWS credentials
+- Environment variables
+- System files
+
+### 8. UNDO MEANS RESTORE, NOT DELETE
+**When asked to "undo" or "revert"**:
+- Restore the previous state
+- DO NOT delete files
+- Ask if backup is needed
+- Confirm restoration was successful
+
+---
+
+## Examples of CORRECT Behavior
+
+❌ **WRONG**: "I'll delete this file and create a new one"
+✅ **RIGHT**: "Should I delete file X and create file Y, or update file X in place?"
+
+❌ **WRONG**: "I renamed the file to make it clearer"
+✅ **RIGHT**: "The filename is unclear. Should I rename it to [suggestion]?"
+
+❌ **WRONG**: "I deleted the old cluster to save costs"
+✅ **RIGHT**: "The cluster is still running. Should I delete it? This will cost $X/month if kept."
+
+❌ **WRONG**: "I created a new branch for this work"
+✅ **RIGHT**: "Should I create a new branch called 'feat/X' for this task?"
+
+---
+
+## Violation Consequences
+
+If you violate these rules:
+1. User will say "undo" or "revert"
+2. You MUST restore the previous state
+3. You MUST apologize and ask for clarification
+4. You MUST NOT repeat the same mistake
+
+---
+
+**REMEMBER**: When in doubt, ASK. Never assume. Always confirm.
