@@ -412,3 +412,40 @@ mongodump --uri="..." --db=ekslab  # NOT all databases
 - `scripts/deploy-complete.sh` - Full automation
 - `scripts/cleanup-all.sh` - Complete cleanup
 - `justfile` - Quick commands
+
+---
+
+## AWS Operations via MCP
+
+**CRITICAL**: All AWS operations MUST use AWS CLI MCP Server tools.
+
+### Tool Selection
+1. **`call_aws`** - Use when you know the exact AWS CLI command
+2. **`suggest_aws_commands`** - Use when exploring options or uncertain
+3. **`aws_knowledge_aws___search_documentation`** - Search AWS docs
+
+### Command Patterns
+
+**EKS Operations**:
+```bash
+aws eks list-clusters --region ap-southeast-1
+aws eks describe-cluster --name <cluster-name> --region ap-southeast-1
+```
+
+**VPC Operations**:
+```bash
+aws ec2 describe-vpcs --region ap-southeast-1
+aws ec2 create-vpc-peering-connection --vpc-id <vpc-1> --peer-vpc-id <vpc-2>
+```
+
+**ECR Operations**:
+```bash
+aws ecr describe-repositories --region ap-southeast-1
+aws ecr get-login-password --region ap-southeast-1
+```
+
+### Best Practices
+- ✅ Always use `--region ap-southeast-1`
+- ✅ Use MCP tools instead of direct CLI
+- ✅ Check command success before proceeding
+- ❌ Never hardcode credentials
