@@ -18,7 +18,7 @@
 **Status**: 📋 PLANNED  
 **Task**: Production Deployment in "prod" Profile  
 **Branch**: `feat/production-deployment` (to be created after approval)  
-**Details**: See [NEXT-SESSION.md](NEXT-SESSION.md)
+**Details**: See [NEXT-TASKS.md](NEXT-TASKS.md)
 
 **Summary**:
 - Deploy private EKS cluster to production AWS profile
@@ -43,7 +43,7 @@
 ### Starting a New Session
 1. Read [AGENTS.md](AGENTS.md) for context
 2. Check this file (TASKS.md) for current/next task
-3. Review task details in linked file (e.g., NEXT-SESSION.md)
+3. Review task details in linked file (e.g., NEXT-TASKS.md)
 4. **Ask for approval** before creating new branch
 5. Create branch: `feat/<task-name>`
 6. Execute task following agentic workflow
@@ -86,7 +86,7 @@ PLANNED → IN_PROGRESS → COMPLETED → MERGED
 ## Future Tasks (Backlog)
 
 ### High Priority
-- [ ] Production deployment (see NEXT-SESSION.md)
+- [ ] Production deployment (see NEXT-TASKS.md)
 - [ ] Backup and restore automation
 - [ ] Monitoring dashboards and alerts
 
@@ -105,6 +105,6 @@ PLANNED → IN_PROGRESS → COMPLETED → MERGED
 ## Notes
 
 - Always create branch **after approval**
-- Link task details in separate files (e.g., NEXT-SESSION.md)
+- Link task details in separate files (e.g., NEXT-TASKS.md)
 - Update this file when task status changes
 - Use MCP tools for all AWS operations (see AGENTS.md)
